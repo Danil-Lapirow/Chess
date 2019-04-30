@@ -18,11 +18,18 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_pushButton_clicked();
+    void handleClick();
 
 private:
     void resetField();
-    std::vector<AbstractFigure *> field;
+    void render();
+    void checkWin();
+    AbstractFigure *field[64];
+    AbstractFigure *selected = nullptr;
+    std::vector<int> *availableCoords;
+    int selectedId = 0;
+    bool isBlackTurn = false;
+    bool whiteWin = false, blackWin = false;
     Ui::MainWindow *ui;
 };
 
