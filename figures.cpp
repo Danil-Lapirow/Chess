@@ -212,6 +212,38 @@ PawnFigure::PawnFigure(bool _isBlack, QWidget *parent)
     setUp();
 }
 
+bool PawnFigure::canKillKing(int id, AbstractFigure *field[])
+{
+    for(auto &movePack : relativeAttackMoves){
+        for(auto move : movePack ){
+            if (id%8 + move.first > 7 || id%8 + move.first < 0)
+                break;
+            if (id/8 + move.second > 7 || id/8 + move.second < 0)
+                break;
+
+            int coord = move.second * 8 + move.first + id;
+            bool attack = false;
+            if(coord > 63 || coord < 0)
+                break;
+
+            if(field[coord]->isBlack == isBlack && field[coord]->canMove)
+                break;
+
+            if(field[coord]->isBlack != isBlack && field[coord]->canMove)
+                attack = true;
+
+            if(attack){
+                if(field[coord]->isKing)
+                    return true;
+                else
+                    break;
+            }
+        }
+    }
+
+    return false;
+}
+
 KnightFigure::KnightFigure(bool _isBlack, QWidget *parent)
 {
     relativeMoves = std::vector<std::vector<std::pair<int, int>>>();
@@ -230,6 +262,95 @@ KnightFigure::KnightFigure(bool _isBlack, QWidget *parent)
     iconId = 5 - isBlack;
     btn = new QPushButton("", parent);
     setUp();
+}
+
+std::vector<int> *KingFigure::getMoves(int id, AbstractFigure *field[], bool canAttack)
+{
+    auto res = this->AbstractFigure::getMoves(id, field, false);
+
+    if(!moved){
+        bool isFreeLeftRow = true, isFreeRightRow = true;
+        int i = 1;
+        while(i < 3){
+            if(field[id+i]->canMove != false){
+                isFreeRightRow = false;
+                break;
+            }
+            i++;
+        }
+        i = 1;
+        while(i < 4){
+            if(field[id-i]->canMove != false){
+                isFreeLeftRow = false;
+                break;
+            }
+            i++;
+        }
+        bool ok = true;
+
+        for (int i = 0; i < 64; ++i)
+            if (field[i]->isBlack != isBlack && field[i]->canMove)
+                if(field[i]->canKillKing(i, field)){
+                    ok = false;
+                    break;
+                }
+
+        if(isFreeLeftRow && !field[id-4]->moved && field[id-4]->isRook && ok && std::find(res->begin(), res->end(), id-1) != res->end()){
+
+            auto saved1 = field[id-2];
+            auto saved2 = field[id-1];
+            field[id-2] = this;
+            field[id-1] = field[id-4];
+            field[id] = new EmptyFigure();
+            field[id-4] = new EmptyFigure();
+            bool ok = true;
+
+            for (int i = 0; i < 64; ++i)
+                if (field[i]->isBlack != isBlack && field[i]->canMove)
+                    if(field[i]->canKillKing(i, field)){
+                        ok = false;
+                        break;
+                    }
+
+            delete field[id];
+            delete field[id-4];
+            field[id] = this;
+            field[id-4] = field[id-1];
+            field[id-2] = saved1;
+            field[id-1] = saved2;
+
+            if(ok)
+                res->push_back(id-2);
+        }
+        if(isFreeRightRow && !field[id+3]->moved && field[id+3]->isRook && ok && std::find(res->begin(), res->end(), id+1) != res->end()){
+            auto saved1 = field[id+2];
+            auto saved2 = field[id+1];
+            field[id+2] = this;
+            field[id+1] = field[id+3];
+            field[id] = new EmptyFigure();
+            field[id+3] = new EmptyFigure();
+            bool ok = true;
+
+            for (int i = 0; i < 64; ++i)
+                if (field[i]->isBlack != isBlack && field[i]->canMove)
+                    if(field[i]->canKillKing(i, field)){
+                        ok = false;
+                        break;
+                    }
+
+            delete field[id];
+            delete field[id+3];
+            field[id] = this;
+            field[id+3] = field[id+1];
+            field[id+2] = saved1;
+            field[id+1] = saved2;
+
+            if(ok)
+                res->push_back(id+2);
+        }
+    }
+
+    return res;
 }
 
 KingFigure::KingFigure(bool _isBlack, QWidget *parent)
@@ -315,6 +436,7 @@ RookFigure::RookFigure(bool _isBlack, QWidget *parent)
         relativeMoves[3].push_back({-y, 0});
     }
 
+    isRook = true;
     isBlack = _isBlack;
     iconId = 11 - isBlack;
     btn = new QPushButton("", parent);

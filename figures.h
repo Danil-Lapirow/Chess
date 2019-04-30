@@ -5,18 +5,18 @@
 #define FIGURES_H
 
 static std::string ICON_PATHS[12] = {
-    "/home/teggot/projects/Chess/icons/bd.png",
-    "/home/teggot/projects/Chess/icons/bl.png",
-    "/home/teggot/projects/Chess/icons/kd.png",
-    "/home/teggot/projects/Chess/icons/kl.png",
-    "/home/teggot/projects/Chess/icons/nd.png",
-    "/home/teggot/projects/Chess/icons/nl.png",
-    "/home/teggot/projects/Chess/icons/pd.png",
-    "/home/teggot/projects/Chess/icons/pl.png",
-    "/home/teggot/projects/Chess/icons/qd.png",
-    "/home/teggot/projects/Chess/icons/ql.png",
-    "/home/teggot/projects/Chess/icons/rd.png",
-    "/home/teggot/projects/Chess/icons/rl.png",
+    "/home/teggot/Programs/Chess/icons/bd.png",
+    "/home/teggot/Programs/Chess/icons/bl.png",
+    "/home/teggot/Programs/Chess/icons/kd.png",
+    "/home/teggot/Programs/Chess/icons/kl.png",
+    "/home/teggot/Programs/Chess/icons/nd.png",
+    "/home/teggot/Programs/Chess/icons/nl.png",
+    "/home/teggot/Programs/Chess/icons/pd.png",
+    "/home/teggot/Programs/Chess/icons/pl.png",
+    "/home/teggot/Programs/Chess/icons/qd.png",
+    "/home/teggot/Programs/Chess/icons/ql.png",
+    "/home/teggot/Programs/Chess/icons/rd.png",
+    "/home/teggot/Programs/Chess/icons/rl.png",
 };
 
 class AbstractFigure{
@@ -32,10 +32,11 @@ public:
     bool moved = false;
     bool isBlack = false;
     bool isKing = false;
+    bool isRook = false;
     virtual void mark_movable(bool status);
     void changeSelected(bool status);
     virtual std::vector<int> *getMoves(int id, AbstractFigure *field[64], bool canAttack = true);
-    bool canKillKing(int id, AbstractFigure *field[64]);
+    virtual bool canKillKing(int id, AbstractFigure *field[64]);
     QPushButton *btn;
     virtual ~AbstractFigure();
 };
@@ -52,6 +53,7 @@ class PawnFigure : public AbstractFigure{
 public:
     std::vector<int> *getMoves(int id, AbstractFigure *field[64], bool canAttack = true) override;
     PawnFigure(bool isBlack, QWidget* parent = nullptr);
+    bool canKillKing(int id, AbstractFigure *field[64]) override;
 //    ~EmptyFigure() override
 };
 
@@ -64,6 +66,7 @@ public:
 class KingFigure : public AbstractFigure{
 public:
     KingFigure(bool isBlack, QWidget* parent = nullptr);
+    std::vector<int> *getMoves(int id, AbstractFigure *field[64], bool canAttack = true) override;
 //    ~EmptyFigure() override
 };
 

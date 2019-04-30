@@ -60,17 +60,48 @@ void MainWindow::handleClick()
     }else{
         for (auto coord : *availableCoords) {
             if(coord == id){
+
                 selected->changeSelected(false);
-                for (auto coord : *availableCoords) {
-                    field[coord]->mark_movable(false);
+                for (auto _coord : *availableCoords) {
+                    field[_coord]->mark_movable(false);
                 }
                 delete availableCoords;
                 delete field[coord];
-                field[coord] = selected;
-                selected->moved = true;
-                field[selectedId] = new EmptyFigure(ui->widget);
-                field[selectedId]->btn->show();
-                connect(field[selectedId]->btn, SIGNAL(clicked()), this, SLOT(handleClick()));
+
+                if(selected->isKing && (selectedId%8 - coord%8 == 2 || selectedId%8 - coord%8 == -2)){
+                    if(selectedId%8 < coord%8){
+                        delete field[coord-1];
+                        field[coord] = selected;
+                        field[coord-1] = field[selectedId + 3];
+
+                        field[selectedId] = new EmptyFigure(ui->widget);
+                        field[selectedId]->btn->show();
+                        connect(field[selectedId]->btn, SIGNAL(clicked()), this, SLOT(handleClick()));
+
+                        field[selectedId + 3] = new EmptyFigure(ui->widget);
+                        field[selectedId + 3]->btn->show();
+                        connect(field[selectedId + 3]->btn, SIGNAL(clicked()), this, SLOT(handleClick()));
+                    }else{
+                        delete field[coord+1];
+                        field[coord] = selected;
+                        field[coord+1] = field[selectedId - 4];
+
+                        field[selectedId] = new EmptyFigure(ui->widget);
+                        field[selectedId]->btn->show();
+                        connect(field[selectedId]->btn, SIGNAL(clicked()), this, SLOT(handleClick()));
+
+                        field[selectedId - 4] = new EmptyFigure(ui->widget);
+                        field[selectedId - 4]->btn->show();
+                        connect(field[selectedId + 3]->btn, SIGNAL(clicked()), this, SLOT(handleClick()));
+                    }
+                }
+                else{
+                    field[coord] = selected;
+                    selected->moved = true;
+                    field[selectedId] = new EmptyFigure(ui->widget);
+                    field[selectedId]->btn->show();
+                    connect(field[selectedId]->btn, SIGNAL(clicked()), this, SLOT(handleClick()));
+                }
                 selected = nullptr;
 
                 isBlackTurn = !isBlackTurn;
